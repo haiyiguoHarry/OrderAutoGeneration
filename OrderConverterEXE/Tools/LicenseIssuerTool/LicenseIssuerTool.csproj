@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <!--
+    IMPORTANT:
+    本工具必须做到“独立/离线可运行”，避免因主项目 NuGet 依赖还原失败导致无法签发 license。
+    因此不引用主项目，工具内部自带最小 License 结构与 Canonical 序列化。
+  -->
+
+</Project>
+

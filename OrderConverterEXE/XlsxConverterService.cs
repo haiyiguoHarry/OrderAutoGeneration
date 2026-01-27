@@ -7,6 +7,7 @@ using System.Collections.Concurrent;
 using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
+using OrderConverterEXE.IpProtection;
 
 namespace OrderConverterEXE;
 
@@ -14,12 +15,14 @@ public class XlsxConverterService : BackgroundService
 {
     private readonly ILogger<XlsxConverterService> _logger;
     private readonly Configuration _config;
+    private readonly IIpGuard _ipGuard;
     private readonly ConcurrentDictionary<string, DateTime> _processedFiles = new();
 
-    public XlsxConverterService(ILogger<XlsxConverterService> logger, Configuration config)
+    public XlsxConverterService(ILogger<XlsxConverterService> logger, Configuration config, IIpGuard ipGuard)
     {
         _logger = logger;
         _config = config;
+        _ipGuard = ipGuard;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -33,6 +36,14 @@ public class XlsxConverterService : BackgroundService
         {
             try
             {
+                // 运行中周期复检：到期/回拨/被替换无效 -> 停止服务
+                var ipResult = _ipGuard.ValidateRuntime();
+                if (!ipResult.Allowed)
+                {
+                    _logger.LogError("[IP] {Code}: {Message}。服务将停止运行。", ipResult.ErrorCode, ipResult.Message);
+                    return;
+                }
+
                 ScanAndConvert();
             }
             catch (Exception ex)
@@ -1921,7 +1932,9 @@ public class XlsxConverterService : BackgroundService
 
                 if (sheetData == null) continue;
 
-                var newWorksheet = newWorkbook.Worksheets.Add(sheet.Name ?? "Sheet1");
+                // OpenXML 的 sheet.Name 是 StringValue?；显式取 Value 以避免可空/类型转换告警
+                var safeSheetName = sheet.Name?.Value ?? sheet.Name?.ToString() ?? "Sheet1";
+                var newWorksheet = newWorkbook.Worksheets.Add(safeSheetName);
 
                 // 读取数据
                 int rowIndex = 1;

@@ -17,4 +17,13 @@
     <PackageReference Include="System.Text.Encoding.CodePages" Version="8.0.0" />
   </ItemGroup>
 
+  <!--
+    IMPORTANT:
+    - SDK-style projects会默认递归包含所有 *.cs。
+    - 我们把签发工具放在 Tools/ 目录下，为避免它被主程序一起编译（导致入口冲突），必须显式排除。
+  -->
+  <ItemGroup>
+    <Compile Remove="Tools\**\*.cs" />
+  </ItemGroup>
+
 </Project>

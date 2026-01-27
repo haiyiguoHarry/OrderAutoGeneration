@@ -5,6 +5,7 @@
 ## 功能
 
 ### 基础能力
+
 - **递归扫描**：每隔 `10` 秒扫描一次（可在 `Configuration.cs` 修改）
 - **保持目录结构**：输出目录与输入目录保持相同层级结构
 - **转换后删除源文件**：本轮扫描全部处理完成后，再统一删除源 `.xlsx`（带重试）
@@ -13,10 +14,12 @@
 - **中文支持**：控制台输出 UTF-8；CSV 以 UTF-8 BOM 写出
 
 ### 非 Orders 目录（默认）
+
 - 每个工作表输出一个 CSV 文件：`{安全文件名}_{安全sheet名}.csv`
 - 若 sheet 名为空：`{安全文件名}_sheet1.csv`
 
 ### Orders 目录（订单专用）
+
 触发条件：相对路径中包含 `Orders`（不区分大小写）。
 
 对每个 Orders 文件，程序会输出 **两份 Excel**（同一目录下）：
@@ -29,6 +32,7 @@
 > 说明：输出文件名与“工作表名称”无关（由目录 + 文件名日期决定）。如果同一 Orders 工作簿含多个 sheet，后处理的 sheet 会覆盖先生成的同名输出（通常订单文件仅 1 个 sheet）。
 
 #### Orders 数据处理（与代码一致）
+
 每次处理会按顺序执行：
 
 1. **修复缺失的 `商品SKU`**
@@ -60,18 +64,21 @@
    - 在 `cost` 单元格写入公式：`=SUM(cost列)+SUM(upsell列)`（求和范围为标题下一行到“sum 行的上一行”）
 
 #### Orders 输出 Excel 格式
+
 - `cost` / `upsell`：货币格式 `"$#,##0.00"`
 - 错误提示（包含“未找到/不存在”）：红底白字
 - 冻结：**前 2 行 + 第 1 列**
 - sum 行高亮：`sum` 单元格与 `cost` 单元格为黄色背景 + 加粗
 
 ### 采购表（仅 LG-Le Orders）
+
 触发条件：Orders 文件相对路径同时包含 `LG-Le` 与 `Orders`（不区分大小写）。
 
 输出文件名：
 `{上上级目录} {上级目录} {日期中文} 采购.xlsx`（日期从源文件名提取 `YYYYMMDD`，如 `2026年1月23日`）
 
 采购表数据来源与规则（与代码一致）：
+
 - 从 Orders 表中按 `商品SKU` 分组汇总 `QTY`
 - 可选加载“找货表”CSV：从 `docs/convertedData/LG-Le/Quotation/` 下选择**最新**且文件名包含 `找货`/`找货表` 的 `.csv`
 - 找货表匹配：
@@ -84,6 +91,7 @@
   - 自动添加 SUM 行（黄色高亮）
 
 ## 目录结构（默认）
+
 - **输入**：`docs/sourceData/`
 - **输出**：`docs/convertedData/`
 - **报价表/找货表目录**：`docs/convertedData/LG-Le/Quotation/`
@@ -93,15 +101,85 @@
 ## 安装与运行
 
 ### 前置要求
+
 - .NET SDK **8.0+**
 
+## 授权使用方式（必须）
+
+本程序已集成 **IPProtection（知识产权保护）** 模块：**没有有效授权文件将无法运行**；授权到期后必须由你重新签发新的 `license.json` 才能继续使用（并带时间回拨检测）。
+
+### 1) 客户侧：打印机器指纹
+
+在客户机器执行（发布 exe 或 `dotnet run` 均可）：
+
+```bash
+OrderConverterEXE.exe --print-fingerprint
+```
+
+把输出的 `fingerprintSha256Hex` 发给你（用于签发授权）。
+
+### 2) 你侧：签发 license.json（离线）
+
+项目内已提供你自用签发工具：`Tools/LicenseIssuerTool/`
+
+```bash
+dotnet run --project "OrderConverterEXE/Tools/LicenseIssuerTool/LicenseIssuerTool.csproj" -- ^
+  --privateKeyPem "E:\\keys\\issuer-private-key.pem" ^
+  --fingerprint "<客户输出的指纹HEX>" ^
+  --validToUtc "2026-03-31T23:59:59Z" ^
+  --issuedTo "客户公司/项目" ^
+  --issuerName "你的姓名" ^
+  --issuerIdHash "<SHA256(身份证号+salt)截断>" ^
+  --out "E:\\out\\license.json"
+```
+
+如果你机器 `dotnet restore` 因网络/代理问题不可用，也可以使用同目录下的 PowerShell 离线脚本（依赖 `openssl`）：
+
+```powershell
+cd "OrderConverterEXE\Tools\LicenseIssuerTool"
+.\issue_license.ps1 `
+  -PrivateKeyPem ".\keys\issuer-private-key.pem" `
+  -Fingerprint "<客户输出的指纹HEX>" `
+  -ValidToUtc "2026-03-31T23:59:59Z" `
+  -IssuedTo "客户公司/项目" `
+  -IssuerName "你的姓名" `
+  -IssuerIdHash "SHA256(身份证号+salt)截断" `
+  -Out ".\license.json"
+```
+
+> 私钥 PEM **只保留在你手里**，不要提交代码库、不要发给客户。
+
+### 3) 客户侧：放置 license.json
+
+把你签发的 `license.json` 放到以下任一位置（优先级从高到低）：
+
+1. `C:\\ProgramData\\OrderConverterEXE\\license.json`
+2. 程序 exe 同目录：`license.json`
+
+放好后启动程序即可。
+
+### 4) 到期续签
+
+到期后程序会报错并退出（示例：`IP-0003`），客户需要替换为你重新签发的新 `license.json`，再重启程序。
+
+### 5) 发行方必须配置：写入公钥
+
+你需要把发行方公钥写入：
+
+- `IpProtection/IpProtectionConstants.cs` 里的 `IssuerPublicKeyPem`
+
+> 如果仍是占位内容，程序会提示 `IP-0008` 并拒绝运行。
+
 ### 推荐运行方式（Windows）
+
 - 直接运行 `run.bat`
 
 ### PowerShell
+
 - 运行 `run.ps1`
 
 ### 命令行
+
 ```bash
 cd OrderConverterEXE
 dotnet restore
@@ -110,6 +188,7 @@ dotnet run
 ```
 
 ## 发布为单文件可执行
+
 ```bash
 # Windows
 dotnet publish -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true
@@ -118,7 +197,9 @@ dotnet publish -c Release -r win-x64 --self-contained true -p:PublishSingleFile=
 发布产物目录：`bin/Release/net8.0/<runtime>/publish/`
 
 ## 配置
+
 `Configuration.cs`：
+
 - `BaseDir`：默认回到解决方案根目录（用于拼出 docs 路径）
 - `SourceDir`：默认 `docs/sourceData`
 - `TargetDir`：默认 `docs/convertedData`
@@ -127,9 +208,11 @@ dotnet publish -c Release -r win-x64 --self-contained true -p:PublishSingleFile=
 日志级别：`appsettings.json`（默认 Information）
 
 ## 日志
+
 - 控制台输出
 - 文件：`xlsx_converter.log`
 
 ## 注意事项
+
 - **源文件会被删除**：转换成功后会删除源 `.xlsx`；文件占用时会重试（最多 5 次，每次间隔 500ms）
 - **重复转换判定**：同一路径文件若“最后修改时间”未变化会被跳过；更新/重新复制（时间变化）会重新转换并覆盖输出

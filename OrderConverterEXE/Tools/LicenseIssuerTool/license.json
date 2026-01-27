@@ -1,0 +1,15 @@
+﻿{
+  "schemaVersion": 1,
+  "licenseId": "LIC-2026-CF1C43C898024FB8BA360F6ABAB794E0",
+  "issuedTo": "\u4F0D\u83F2PC/\u6D4B\u8BD5\u7528",
+  "validFromUtc": "2026-01-27T07:18:18.6740205Z",
+  "validToUtc": "2026-03-31T23:59:59.0000000Z",
+  "machineBinding": {
+    "fingerprintSha256": "8B17541C0BA2A2F207878D23ADDF8C0290BFE4D98FA4639E7CBB2D2B728AA3BF"
+  },
+  "issuer": {
+    "name": "\u90ED\u6D77\u6BC5",
+    "idHash": "SHA256(43250319931207405X\u002Bsalt)\u622A\u65AD"
+  },
+  "signature": "NSMqHMwYGKPtnU7L\u002Bxa0ye7yINpOo6eMTWJYMUzJt9\u002BXTpIky7wpZCsXbfwYmQ4jB\u002BssuRCqza/0pO4nAudGEA=="
+}

@@ -1,0 +1,8 @@
+dotnet run --project ".\LicenseIssuerTool.csproj" -- ^
+  --privateKeyPem "E:\workspace\OrderAutoGeneration\OrderConverterEXE\Tools\LicenseIssuerTool\keys\issuer-private-key.pem" ^
+  --fingerprint "8B17541C0BA2A2F207878D23ADDF8C0290BFE4D98FA4639E7CBB2D2B728AA3BF" ^
+  --validToUtc "2026-03-31T23:59:59Z" ^
+  --issuedTo "伍菲PC/测试用" ^
+  --issuerName "郭海毅" ^
+  --issuerIdHash "SHA256(43250319931207405X+salt)截断" ^
+  --out ".\license.json"
