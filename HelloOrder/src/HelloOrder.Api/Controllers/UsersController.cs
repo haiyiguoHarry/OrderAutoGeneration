@@ -29,7 +29,7 @@ public class UsersController : ControllerBase
         CancellationToken ct = default)
     {
         if (GetRoleCode() != "Admin") return Forbid();
-        var q = _db.SysUsers.AsNoTracking().Include(u => u.Role);
+        IQueryable<SysUser> q = _db.SysUsers.AsNoTracking().Include(u => u.Role);
         if (!string.IsNullOrWhiteSpace(username))
             q = q.Where(u => u.Username.Contains(username));
         if (!string.IsNullOrWhiteSpace(realName))
@@ -75,6 +75,37 @@ public class UsersController : ControllerBase
             CreatedAt = u.CreatedAt,
             UpdatedAt = u.UpdatedAt
         }));
+    }
+
+    /// <summary>当前用户（助理）可查看的关联业务员列表</summary>
+    [HttpGet("me/business-users")]
+    public async Task<ActionResult<ApiResult<List<BusinessUserSimpleDto>>>> GetMyBusinessUsers(CancellationToken ct = default)
+    {
+        if (GetRoleCode() != "Assistant") return Ok(ApiResult<List<BusinessUserSimpleDto>>.Ok(new List<BusinessUserSimpleDto>()));
+        var uid = GetUserId();
+        if (!uid.HasValue) return Forbid();
+        var ids = await _db.UserBusinessAssistants.AsNoTracking()
+            .Where(x => x.AssistantUserId == uid)
+            .Select(x => x.BusinessUserId)
+            .ToListAsync(ct);
+        if (ids.Count == 0) return Ok(ApiResult<List<BusinessUserSimpleDto>>.Ok(new List<BusinessUserSimpleDto>()));
+        var users = await _db.SysUsers.AsNoTracking()
+            .Where(u => ids.Contains(u.Id))
+            .Select(u => new BusinessUserSimpleDto { Id = u.Id, Username = u.Username, RealName = u.RealName })
+            .ToListAsync(ct);
+        return Ok(ApiResult<List<BusinessUserSimpleDto>>.Ok(users));
+    }
+
+    /// <summary>指定用户（助理）关联的业务员ID列表，仅 Admin 用于编辑</summary>
+    [HttpGet("{id}/business-user-ids")]
+    public async Task<ActionResult<ApiResult<List<Guid>>>> GetBusinessUserIds(Guid id, CancellationToken ct = default)
+    {
+        if (GetRoleCode() != "Admin") return Forbid();
+        var list = await _db.UserBusinessAssistants.AsNoTracking()
+            .Where(x => x.AssistantUserId == id)
+            .Select(x => x.BusinessUserId)
+            .ToListAsync(ct);
+        return Ok(ApiResult<List<Guid>>.Ok(list));
     }
 
     [HttpGet("roles")]
@@ -193,9 +224,9 @@ public class UserUpdateDto
     public string? NewPassword { get; set; }
 }
 
-public class RoleDto
+public class BusinessUserSimpleDto
 {
     public Guid Id { get; set; }
-    public string Code { get; set; } = null!;
-    public string Name { get; set; } = null!;
+    public string Username { get; set; } = null!;
+    public string? RealName { get; set; }
 }

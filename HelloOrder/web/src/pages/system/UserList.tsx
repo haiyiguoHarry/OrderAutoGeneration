@@ -42,6 +42,9 @@ export default function UserList() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form] = Form.useForm();
   const [editForm] = Form.useForm();
+  const [businessUsers, setBusinessUsers] = useState<UserRow[]>([]);
+  const assistantRoleId = roles.find(r => r.code === 'Assistant')?.id ?? null;
+  const businessRoleId = roles.find(r => r.code === 'Business')?.id ?? null;
 
   const load = async () => {
     setLoading(true);
@@ -95,14 +98,26 @@ export default function UserList() {
     }
   };
 
-  const openEdit = (record: UserRow) => {
+  const loadBusinessUsers = async () => {
+    if (!businessRoleId) return;
+    const res = await api.get<{ list: UserRow[] }>(`/users?roleId=${businessRoleId}&pageSize=500`);
+    if (res.code === 0 && res.data?.list) setBusinessUsers(res.data.list);
+  };
+
+  const openEdit = async (record: UserRow) => {
     setEditingId(record.id);
     editForm.setFieldsValue({
       realName: record.realName,
       roleId: record.roleId || undefined,
-      status: record.status
+      status: record.status,
+      businessUserIds: [] as string[]
     });
     setEditModalOpen(true);
+    await loadBusinessUsers();
+    if (record.roleId === assistantRoleId) {
+      const idsRes = await api.get<string[]>(`/users/${record.id}/business-user-ids`);
+      if (idsRes.code === 0 && idsRes.data) editForm.setFieldValue('businessUserIds', idsRes.data);
+    }
   };
 
   const onEdit = async (v: Record<string, unknown>) => {
@@ -114,15 +129,24 @@ export default function UserList() {
     };
     if (v.newPassword) body.newPassword = v.newPassword;
     const res = await api.put<unknown>(`/users/${editingId}`, body);
-    if (res.code === 0) {
-      message.success('修改成功');
-      setEditModalOpen(false);
-      setEditingId(null);
-      editForm.resetFields();
-      load();
-    } else {
+    if (res.code !== 0) {
       message.error(res.message || '修改失败');
+      return;
     }
+    if (v.roleId === assistantRoleId && Array.isArray(v.businessUserIds)) {
+      const setRes = await api.put<unknown>('/user-business-assistants/set-for-assistant', {
+        assistantUserId: editingId,
+        businessUserIds: v.businessUserIds
+      });
+      if (setRes.code !== 0) {
+        message.warning('用户信息已保存，但关联业务员保存失败：' + (setRes.message || ''));
+      }
+    }
+    message.success('修改成功');
+    setEditModalOpen(false);
+    setEditingId(null);
+    editForm.resetFields();
+    load();
   };
 
   const onDelete = async (id: string) => {
@@ -288,6 +312,18 @@ export default function UserList() {
           <Form.Item name="status" label="状态" rules={[{ required: true }]}>
             <Select options={STATUS_OPTIONS} />
           </Form.Item>
+          {editForm.getFieldValue('roleId') === assistantRoleId && (
+            <Form.Item name="businessUserIds" label="关联业务员（助理可查看并操作这些业务员的数据）">
+              <Select
+                mode="multiple"
+                placeholder="选择可关联的业务员"
+                allowClear
+                showSearch
+                optionFilterProp="label"
+                options={businessUsers.map(u => ({ value: u.id, label: `${u.realName || u.username} (${u.username})` }))}
+              />
+            </Form.Item>
+          )}
           <Form.Item name="newPassword" label="新密码（不修改请留空）" rules={[{ min: 6, message: '至少 6 位' }]}>
             <Input.Password placeholder="留空则不修改，填写则至少 6 位" />
           </Form.Item>

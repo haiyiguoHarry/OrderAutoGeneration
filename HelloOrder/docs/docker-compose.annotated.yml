@@ -1,0 +1,47 @@
+# ============================================================
+# HelloOrder 项目 Docker Compose 配置（带注释版，仅供学习）
+# 实际使用请以 docker-compose.yml 为准
+# ============================================================
+
+# Compose 文件格式版本，3.8 支持 healthcheck、volumes 等
+version: '3.8'
+
+# services：定义多个服务，每个服务对应一个或多个容器
+services:
+  # ---------- PostgreSQL 数据库 ----------
+  postgres:
+    # 镜像：PostgreSQL 16，基于 Alpine（体积小）
+    image: postgres:16-alpine
+    # 环境变量：官方镜像在首次启动时用这些创建用户和数据库（仅当数据目录为空）
+    environment:
+      POSTGRES_USER: postgres       # 超级用户名，连接串里 Username 填这个
+      POSTGRES_PASSWORD: postgres   # 密码，连接串里 Password 填这个（生产务必改）
+      POSTGRES_DB: helloorder       # 默认数据库名，连接串里 Database=helloorder
+    # 端口映射："宿主机端口:容器内端口"，本机连 localhost:5432 即连到容器内 5432
+    ports:
+      - "5432:5432"
+    # 卷挂载：命名卷 pgdata 挂到容器内数据目录，重启/删容器后数据仍保留
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    # 健康检查：定期执行 pg_isready，用于标记容器是否就绪
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s   # 每 5 秒检查一次
+      timeout: 5s    # 单次检查超时 5 秒
+      retries: 5     # 连续失败 5 次标为不健康
+
+  # ---------- Redis 缓存 ----------
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"  # Redis 默认端口，后端连接串 Redis=localhost:6379
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]  # 返回 PONG 表示正常
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+# 声明命名卷，上面 postgres 的 volumes 引用了 pgdata
+# 卷由 Docker 管理，docker-compose down 不会删卷，数据保留
+volumes:
+  pgdata: {}
