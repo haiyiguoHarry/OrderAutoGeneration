@@ -140,6 +140,9 @@ npm run dev
 ---
 
 ## 部署
+#### 快速启动（Docker + ngrok）
+
+如果你只想把后端 API 跑起来并用公网访问：见 `docs/Docker-ngrok快速启动.md`。
 
 ### 方式一：仅用 Docker 跑数据库，本机跑前后端
 
