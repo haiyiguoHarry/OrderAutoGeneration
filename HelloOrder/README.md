@@ -6,30 +6,36 @@
 
 ## 项目信息
 
-| 项目 | 说明 |
-|------|------|
-| **项目名称** | HelloOrder |
-| **版本** | 1.0 |
-| **文档** | [需求文档.md](./需求文档.md) · [设计文档.md](./设计文档.md) |
+
+| 项目       | 说明                                          |
+| -------- | ------------------------------------------- |
+| **项目名称** | HelloOrder                                  |
+| **版本**   | 1.0                                         |
+| **文档**   | [需求文档.md](./需求文档.md) · [设计文档.md](./设计文档.md) |
+
 
 ### 技术栈
 
-| 层次 | 技术 |
-|------|------|
-| 前端 | React 18 + Vite 5 + TypeScript + Ant Design 5 |
-| 后端 | ASP.NET 8 Web API、JWT 认证 |
-| 数据库 | PostgreSQL 16 |
-| 缓存 | Redis 7 |
-| 部署 | Docker、Nginx |
+
+| 层次  | 技术                                            |
+| --- | --------------------------------------------- |
+| 前端  | React 18 + Vite 5 + TypeScript + Ant Design 5 |
+| 后端  | ASP.NET 8 Web API、JWT 认证                      |
+| 数据库 | PostgreSQL 16                                 |
+| 缓存  | Redis 7                                       |
+| 部署  | Docker、Nginx                                  |
+
 
 ### 角色与默认账号
 
-| 角色 | 说明 | 默认账号（种子数据） |
-|------|------|------------------------|
+
+| 角色    | 说明               | 默认账号（种子数据）           |
+| ----- | ---------------- | -------------------- |
 | 系统管理员 | 用户/角色/权限、系统参数、日志 | `admin` / `admin123` |
-| 老板 | 销量/盈利/提成报表、审批 | 需在用户管理中创建并分配「老板」角色 |
-| 外贸业务员 | 商家、订单、报价、采购、发货 | 需创建并分配「外贸业务员」角色 |
-| 助理 | 被分配的任务与订单操作 | 需创建并分配「助理」角色 |
+| 老板    | 销量/盈利/提成报表、审批    | 需在用户管理中创建并分配「老板」角色   |
+| 外贸业务员 | 商家、订单、报价、采购、发货   | 需创建并分配「外贸业务员」角色      |
+| 助理    | 被分配的任务与订单操作      | 需创建并分配「助理」角色         |
+
 
 ---
 
@@ -80,14 +86,16 @@ HelloOrder/
 
 ### 后端配置（appsettings.json / 环境变量）
 
-| 配置项 | 说明 | 示例 |
-|--------|------|------|
-| `ConnectionStrings__DefaultConnection` | PostgreSQL 连接串 | `Host=localhost;Port=5432;Database=helloorder;Username=postgres;Password=postgres` |
-| `ConnectionStrings__Redis` | Redis 连接（可选） | `localhost:6379` |
-| `Jwt__Key` | JWT 签名密钥（至少 32 字符） | 生产环境务必更换 |
-| `Jwt__Issuer` / `Jwt__Audience` | JWT 签发者与受众 | `HelloOrder` |
-| `Jwt__ExpiryMinutes` | Token 有效期（分钟） | `120` |
-| `Cors__Origins` | 允许的前端来源 | `http://localhost:5173`（生产改为实际前端域名） |
+
+| 配置项                                    | 说明                 | 示例                                                                                 |
+| -------------------------------------- | ------------------ | ---------------------------------------------------------------------------------- |
+| `ConnectionStrings__DefaultConnection` | PostgreSQL 连接串     | `Host=localhost;Port=5432;Database=helloorder;Username=postgres;Password=postgres` |
+| `ConnectionStrings__Redis`             | Redis 连接（可选）       | `localhost:6379`                                                                   |
+| `Jwt__Key`                             | JWT 签名密钥（至少 32 字符） | 生产环境务必更换                                                                           |
+| `Jwt__Issuer` / `Jwt__Audience`        | JWT 签发者与受众         | `HelloOrder`                                                                       |
+| `Jwt__ExpiryMinutes`                   | Token 有效期（分钟）      | `120`                                                                              |
+| `Cors__Origins`                        | 允许的前端来源            | `http://localhost:5173`（生产改为实际前端域名）                                                |
+
 
 ### 前端配置
 
@@ -118,8 +126,8 @@ cd src/HelloOrder.Api
 dotnet run
 ```
 
-- **API 地址**：http://localhost:5000  
-- **Swagger**：http://localhost:5000/swagger  
+- **API 地址**：[http://localhost:5000](http://localhost:5000)  
+- **Swagger**：[http://localhost:5000/swagger](http://localhost:5000/swagger)  
 - 首次运行会自动建表并执行种子数据（含 `admin` 账号）。
 
 ### 3. 运行前端
@@ -130,8 +138,8 @@ npm install
 npm run dev
 ```
 
-- **前端地址**：http://localhost:5173  
-- 开发时请求 `/api/*` 会由 Vite 代理到后端 5000 端口。
+- **前端地址**：[http://localhost:5173](http://localhost:5173)  
+- 开发时请求 `/api/`* 会由 Vite 代理到后端 5000 端口。
 
 ### 4. 登录
 
@@ -140,17 +148,33 @@ npm run dev
 ---
 
 ## 部署
+
 #### 快速启动（Docker + ngrok）
 
 如果你只想把后端 API 跑起来并用公网访问：见 `docs/Docker-ngrok快速启动.md`。
+
+如果你使用 `docker_publish_one_click.sh` 一键发布脚本，并开启自动启动 ngrok（`NGROK_ENABLED=1`），可通过以下参数进行常用调整：
+
+- 把 Web 的宿主端口改成空闲端口（例如 8081）再跑：
+
+```bash
+cd /Users/haiyiguo/GitRepor/OrderAutoGeneration/HelloOrder
+WEB_HOST_PORT=8081 NGROK_ENABLED=1 NGROK_KILL_EXISTING=0 ./docker_publish_one_click.sh
+```
+
+- 或者如果你现在已经有 ngrok 在跑，不想脚本再启动一份 ngrok，就先这样（我已用这个方式把 web 起起来了）：
+
+```bash
+WEB_HOST_PORT=8081 NGROK_ENABLED=0 ./docker_publish_one_click.sh
+```
 
 ### 方式一：仅用 Docker 跑数据库，本机跑前后端
 
 适合在服务器或本机已安装 .NET 与 Node 时使用：
 
-1. `docker-compose up -d` 启动 PostgreSQL、Redis。  
-2. 修改 `src/HelloOrder.Api/appsettings.json`（或通过环境变量）中的连接串，指向 Docker 中的数据库。  
-3. 后端：`cd src/HelloOrder.Api && dotnet run` 或发布后运行。  
+1. `docker-compose up -d` 启动 PostgreSQL、Redis。
+2. 修改 `src/HelloOrder.Api/appsettings.json`（或通过环境变量）中的连接串，指向 Docker 中的数据库。
+3. 后端：`cd src/HelloOrder.Api && dotnet run` 或发布后运行。
 4. 前端：`cd web && npm run build`，将 `web/dist` 用任意静态服务器或 Nginx 托管，并配置 `/api` 反向代理到后端。
 
 ### 方式二：Docker 构建前后端镜像并编排
@@ -229,15 +253,17 @@ services:
 - **认证**：除登录外，请求头需带 `Authorization: Bearer <token>`。  
 - **统一响应**：`{ "code": 0, "message": "success", "data": ... }`，分页为 `{ "list": [], "total": 0, "page": 1, "pageSize": 20 }`。
 
-| 分组 | 示例接口 |
-|------|----------|
-| 认证 | `POST /api/auth/login`、`GET /api/auth/profile` |
-| 用户 | `GET /api/users`、`GET /api/users/roles`（Admin） |
-| 商家 | `GET/POST/PUT/DELETE /api/merchants`、`GET /api/merchants/{id}` |
-| 订单 | `GET/POST /api/orders`、`GET /api/orders/{id}`、`PUT /api/orders/{id}/status` |
-| 报价单 | `GET /api/quotations`（占位） |
-| 采购单 | `GET /api/purchase-orders`（占位） |
-| 报表 | `GET /api/reports/sales`、`/profit`、`/commission`（占位） |
+
+| 分组  | 示例接口                                                                        |
+| --- | --------------------------------------------------------------------------- |
+| 认证  | `POST /api/auth/login`、`GET /api/auth/profile`                              |
+| 用户  | `GET /api/users`、`GET /api/users/roles`（Admin）                              |
+| 商家  | `GET/POST/PUT/DELETE /api/merchants`、`GET /api/merchants/{id}`              |
+| 订单  | `GET/POST /api/orders`、`GET /api/orders/{id}`、`PUT /api/orders/{id}/status` |
+| 报价单 | `GET /api/quotations`（占位）                                                   |
+| 采购单 | `GET /api/purchase-orders`（占位）                                              |
+| 报表  | `GET /api/reports/sales`、`/profit`、`/commission`（占位）                        |
+
 
 更多接口与字段见 [设计文档.md](./设计文档.md)。
 
@@ -250,7 +276,7 @@ services:
 - **商家管理**：列表、新增、编辑、删除（按业务员过滤）  
 - **订单管理**：列表、详情、新增、状态更新  
 - **用户管理**：用户列表、角色列表（仅 Admin）  
-- **工作台**：占位统计与快捷入口  
+- **工作台**：占位统计与快捷入口
 
 报价单、采购单、仓储发货、报表与提成等模块见设计文档，可按需扩展实现。
 
@@ -260,6 +286,6 @@ services:
 
 - 报价单生成与发送、采购表生成与跟进、仓储与面单、物流与售后  
 - 老板看板：销量、盈利、提成规则与计算、审核  
-- 店小秘/1688 对接、Excel 导入导出、操作日志与审计  
+- 店小秘/1688 对接、Excel 导入导出、操作日志与审计
 
 详见 [需求文档.md](./需求文档.md) 与 [设计文档.md](./设计文档.md)。
