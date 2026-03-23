@@ -39,6 +39,56 @@
 
 ---
 
+## 快速開始：本地電腦運行前端與後端
+
+若要於本地電腦運行 HelloOrder 的前端與後端，請依以下步驟操作：
+
+### 前置準備
+
+- 確保已安裝：**.NET 8** SDK、**Node.js 18+**、**Docker** 與 **Docker Compose**
+- 在終端中進入項目根目錄：`HelloOrder/`
+
+### 步驟一：啟動數據庫與 Redis
+
+```bash
+docker-compose up -d
+```
+
+將啟動 PostgreSQL（端口 5432）與 Redis（端口 6379）。
+
+### 步驟二：運行後端
+
+```bash
+cd src/HelloOrder.Api
+dotnet run
+```
+
+- **API 地址**：[http://localhost:5000](http://localhost:5000)
+- **Swagger 文檔**：[http://localhost:5000/swagger](http://localhost:5000/swagger)
+- 首次運行會自動建表並執行種子數據（含 `admin` 賬號）
+
+### 步驟三：運行前端
+
+**新開一個終端窗口**，執行：
+
+```bash
+cd web
+npm install
+npm run dev
+```
+
+- **前端地址**：[http://localhost:5173](http://localhost:5173)
+- 開發時請求 `/api/*` 會由 Vite 代理到後端 5000 端口
+
+### 步驟四：登錄系統
+
+在瀏覽器打開 [http://localhost:5173](http://localhost:5173)，使用默認管理員賬號：
+
+- **用戶名**：`admin`
+- **密碼**：`admin123`
+
+---
+
 ## 项目结构
 
 ```
