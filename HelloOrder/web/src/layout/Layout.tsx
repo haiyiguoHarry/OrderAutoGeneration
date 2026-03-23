@@ -1,37 +1,20 @@
 import { useState } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { Layout as AntLayout, Menu, Dropdown, Avatar, Space } from 'antd';
-import {
-  DashboardOutlined,
-  ShopOutlined,
-  FileTextOutlined,
-  CarOutlined,
-  UserOutlined,
-  SettingOutlined,
-  LogoutOutlined
-} from '@ant-design/icons';
+import { UserOutlined, LogoutOutlined } from '@ant-design/icons';
 import { useAuth } from '../store/AuthContext';
+import { hasPermission, MENU_CONFIG } from '../config/pagePermissions';
 
 const { Header, Sider, Content } = AntLayout;
-
-const menuItems = [
-  { key: '/dashboard', icon: <DashboardOutlined />, label: '工作台' },
-  { key: '/merchants', icon: <ShopOutlined />, label: '商家管理' },
-  { key: '/shops', icon: <ShopOutlined />, label: '商家店铺' },
-  { key: '/products', icon: <ShopOutlined />, label: '商品管理' },
-  { key: '/orders', icon: <FileTextOutlined />, label: '订单管理' },
-  { key: '/orders/conversion', icon: <FileTextOutlined />, label: '订单文件转换' },
-  { key: '/logistics', icon: <CarOutlined />, label: '快递与物流' },
-  { key: '/system/users', icon: <SettingOutlined />, label: '用户管理' },
-  { key: '/system/roles', icon: <SettingOutlined />, label: '角色管理' },
-  { key: '/system/permissions', icon: <SettingOutlined />, label: '页面权限管理' }
-];
 
 export default function Layout() {
   const [collapsed, setCollapsed] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout } = useAuth();
+  const menuItems = MENU_CONFIG
+    .filter(item => hasPermission(user, item.permission))
+    .map(item => ({ key: item.key, icon: item.icon, label: item.label }));
 
   const userMenu = {
     items: [
